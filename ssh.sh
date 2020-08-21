@@ -34,13 +34,17 @@ else
             servers=$(mysql -h localhost -ubehzad -pdollar -B -e "use bash; select * from bash.hosts;")
             echo $servers
             read id
-            username=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select username from bash.hosts where id='$id';")
-            password=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select password from bash.hosts where id='$id';")
-            ip=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select ip from bash.hosts where id='$id';")
-            port=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select port from bash.hosts where id='$id';")
+            username=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select username from bash.hosts where id='$id';") >/dev/null 2>&1
+            password=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select password from bash.hosts where id='$id';") >/dev/null 2>&1
+            ip=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select ip from bash.hosts where id='$id';") >/dev/null 2>&1
+            port=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select port from bash.hosts where id='$id';") >/dev/null 2>&1
             
-            sshpass -p "$password" ssh $username@$ip -p $port
-            #  sshpass -p '5clUW4gf' ssh skywriters@144.76.143.167 -p 49150
+            sshpassp="sshpass -p '"
+            ssh="' ssh "
+
+            excutiveCommand="$sshpassp$password$ssh$username@$ip -p $port"
+
+             gnome-terminal -e "$excutiveCommand"
 
         
         else
@@ -54,8 +58,20 @@ else
             echo "port :"
             read port
 
-            user=$(mysql -h localhost -ubehzad -pdollar -B -e "use bash; insert into hosts ( username, password,ip ,port ) VALUES ('$username', '$password','$ip','$port');")
+            user=$(mysql -h localhost -ubehzad -pdollar -B -e "use bash; insert into hosts ( username, password,ip ,port ) VALUES ('$username', '$password','$ip','$port');") >/dev/null 2>&1
 
         fi
     fi
 fi
+
+
+    # VAR1="'sshpass -p "
+    #         VAR1+=$password
+    #         VAR1+=" ssh "
+    #         VAR1+=$username
+    #         VAR1+="@"
+    #         VAR1+=$ip
+    #         VAR1+=" -p "
+    #         VAR1+=$port
+    #         VAR1+=";'"
+    #         echo $VAR1
