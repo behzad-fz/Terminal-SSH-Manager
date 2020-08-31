@@ -1,3 +1,6 @@
+#!/bin/bash
+
+source database.conf
 
 if ! dpkg --get-selections | grep -q "^figlet[[:space:]]*install$" >/dev/null; then
     sudo apt install figlet
@@ -48,21 +51,21 @@ else
             echo 'Authored by : "Behzad Fazelasl"'
             tput setaf 7;
             
-            echo "press [1] to see the LIST | press [2] to add new host"
+            echo "press [0] to config | press [1] to see the LIST | press [2] to add new host"
             read status
             if [ '1' = $status ] >/dev/null 2>&1
                 then
             
-                mysql -h localhost -ubehzad -pdollar -B -s -N -e "use bash; select id , username from bash.hosts;" | while read id username; do
+                mysql --host=$hostname --user=$db_username --password=$db_password --batch --silent --skip-column-names --execute="use $db_name; select id , username from bash.hosts;" | while read id username; do
                     echo "$(echo $id - $username | toilet -f term -F border --gay)";
                 done 
                 
                 echo "Enter chosen host's ID :"
                 read id
-                username=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select username from bash.hosts where id='$id';") >/dev/null 2>&1
-                password=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select password from bash.hosts where id='$id';") >/dev/null 2>&1
-                ip=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select ip from bash.hosts where id='$id';") >/dev/null 2>&1
-                port=$(mysql -h localhost -ubehzad -pdollar -B -se "use bash; select port from bash.hosts where id='$id';") >/dev/null 2>&1
+                username=$(mysql --host=localhost --user=behzad --password=dollar --batch --silent --execute="use bash; select username from bash.hosts where id='$id';") >/dev/null 2>&1
+                password=$(mysql --host=localhost --user=behzad --password=dollar --batch --silent --execute="use bash; select password from bash.hosts where id='$id';") >/dev/null 2>&1
+                ip=$(mysql --host=localhost --user=behzad --password=dollar --batch --silent --execute="use bash; select ip from bash.hosts where id='$id';") >/dev/null 2>&1
+                port=$(mysql --host=localhost --user=behzad --password=dollar --batch --silent --execute="use bash; select port from bash.hosts where id='$id';") >/dev/null 2>&1
                 
                 sshpassp="sshpass -p '"
                 ssh="' ssh "
@@ -72,7 +75,11 @@ else
                 #  gnome-terminal -e "$excutiveCommand" #depricated
                 gnome-terminal -- /bin/bash -c "$excutiveCommand;"
 
-            
+            elif [ '0' = $status ] >/dev/null 2>&1
+                then
+                gnome-terminal -- /bin/bash -c "nano database.conf"
+                PID=$!
+                kill -INT $PID
             else
                 echo "you have a new host to add,please enter credentials"
                 echo "username :"
